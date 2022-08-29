@@ -1,1 +1,1 @@
-## This is a component library which provides form inputs. Updated
+## This is a component library which provides form inputs.
