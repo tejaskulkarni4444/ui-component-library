@@ -1,20 +1,20 @@
 import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import Button from './index';
+import TextInput from './index';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
-  title: 'Button',
-  component: Button,
-} as ComponentMeta<typeof Button>;
+  title: 'UI Library TextInput',
+  component: TextInput,
+} as ComponentMeta<typeof TextInput>;
 
 // More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
-const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />;
+const Template: ComponentStory<typeof TextInput> = (args) => <TextInput {...args} />;
 
-export const HelloWorld = Template.bind({});
+export const TextInputBox = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
-HelloWorld.args = {
-  label: 'Submit',
+TextInputBox.args = {
+  label: 'insert text!',
   fontSize: '14'
 };

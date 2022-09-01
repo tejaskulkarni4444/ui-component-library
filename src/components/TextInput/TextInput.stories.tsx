@@ -5,7 +5,7 @@ import TextInput from './index';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
-  title: 'UI Library TextInput',
+  title: 'TextInput',
   component: TextInput,
 } as ComponentMeta<typeof TextInput>;
 
