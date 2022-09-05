@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react";
-import { Modal, Typography, Stack } from "@mui/material";
+import { Modal, Typography, Stack, Box } from "@mui/material";
 
 interface CallbackType { (): void }
 
@@ -20,21 +20,29 @@ const ActionModal = ({
     title = 'Modal title',
     children,
     backgroundColor = '#ffffff',
-    width = '500',
+    width = '600',
     handleClose
 }: ModalProps) => {
     return (
-        // TODO: add onclose toggle if required.
         <Modal
             open={open}
             onClose={handleClose}
+            sx={{
+                top: '10%',
+                maxHeight: '500px'
+            }}
         >
             <Stack
                 bgcolor={backgroundColor} sx={{
                 padding: '15px',
                 maxWidth: `${width}px`,
-                margin: 'auto'
+                margin: 'auto',
+                borderRadius: '10px',
+                outline: 0,
             }}>
+                <Box display='flex' justifyContent='end'>
+                    <span>x</span>
+                </Box>
                 <Typography variant="h5" textAlign='center' >
                     {title}
                 </Typography>

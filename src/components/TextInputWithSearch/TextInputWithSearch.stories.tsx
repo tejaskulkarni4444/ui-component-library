@@ -17,5 +17,8 @@ export const TextInputWithSearchBox = Template.bind({});
 TextInputWithSearchBox.args = {
   label: 'LabelText!',
   fontSize: '14',
-  placeholder: 'Enter text'
+  placeholder: 'Enter text',
+  border: 'standard',
+  multipleSelection: true,
+  fontColor: '#000000'
 };
