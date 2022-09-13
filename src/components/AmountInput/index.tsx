@@ -46,7 +46,6 @@ const AmountInput = (props: AmountInputProps) => {
         // Join the first remaining numbers with last three numbers with a ','
         //
         const transformedInteger = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
-        console.log(transformedInteger)
     }
 
     return <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
