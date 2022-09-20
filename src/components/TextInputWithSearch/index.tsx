@@ -1,25 +1,24 @@
-import React, { useState } from "react";
+import React,{ useState } from "react";
 import {
   Box,
   FormControl,
   InputAdornment,
-  Tooltip,
   Typography,
-  TextField,
+  TextField
 } from "@mui/material";
-import ListAltIcon from "@mui/icons-material/ListAlt";
 import ActionModal from "../ActionModal";
-// import SearchableList from "../SearchableList";
 //@ts-ignore
 import styled from "styled-components";
-import SearchableTable from "../SearchableTable";
+import ListTable from "../ListTable";
+import { BiListUl } from 'react-icons/bi'
 
 ////////////////////////////
 //        Types           //
 ///////////////////////////
 
 type TSelectionList = string[];
-type TBorder = "standard" | "outlined" | "filled";
+export type TBorder = "standard" | "outlined" | "filled";
+
 export interface TextInputProps {
   label: string;
   fontSize: number | string;
@@ -36,7 +35,7 @@ export interface TextInputProps {
   labelFontColor?: string;
   modalCloseButton?: boolean;
   searchBy: string;
-  listData?: Array<{}>;
+  listData: Array<{}>;
   hoverEffect?: boolean;
 }
 
@@ -136,7 +135,7 @@ const TextInputWithSearch = ({
   fontFamily = "'Arial'",
   className,
   border = "standard",
-  multipleSelection = true,
+  multipleSelection = false,
   fontColor = "#000000",
   borderColor = "#cfcfcf",
   labelFontColor = "#000000",
@@ -167,9 +166,19 @@ const TextInputWithSearch = ({
   //
   // save selected values
   //
-  const handleSelectedList = (list: TSelectionList) => {
-    setSelectionList([...list.map((item: any) => item[searchBy])]);
-    handleToggleModal();
+  const handleSelectedList = (selectedOptionsList: TSelectionList) => {
+    //
+    // Error if multiple seleciton is off
+    //
+    if (!multipleSelection && selectedOptionsList.length > 1) {
+      SetNotfoundError(true);
+      setErrorMessage("Multiple values not allowed")
+      handleToggleModal();
+      return false;
+    } else {
+      setSelectionList([...selectedOptionsList.map((item: any) => item[searchBy])]);
+      handleToggleModal();
+    }
   };
 
   //
@@ -232,6 +241,7 @@ const TextInputWithSearch = ({
       }
     }
   };
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", fontFamily: fontFamily }}>
       {/* Input label */}
@@ -279,8 +289,8 @@ const TextInputWithSearch = ({
               endAdornment: (
                 <InputAdornment position="end">
                   <div onClick={handleToggleModal}>
-                    <ListAltIcon
-                      sx={{
+                    <BiListUl
+                      style={{
                         fontSize: `${fontSize}px`,
                         cursor: "pointer",
                         borderRadius: "50%",
@@ -288,10 +298,10 @@ const TextInputWithSearch = ({
                         width: "100%",
                         padding: "3px",
                         color: `${borderColor} !important`,
-                        "&:hover": {
-                          backgroundColor: "lightgray",
-                          color: "#ffffff !important",
-                        },
+                        // "&:hover": {
+                        //   backgroundColor: "lightgray",
+                        //   color: "#ffffff !important",
+                        // },
                       }}
                     />
                   </div>
@@ -300,7 +310,6 @@ const TextInputWithSearch = ({
             }}
           />
           {selecitonList && selecitonList.length > 0 && (
-            <Tooltip title="Click to remove" onClick={handleToggleModal}>
               <Typography
                 sx={{
                   mr: 1,
@@ -312,28 +321,27 @@ const TextInputWithSearch = ({
                 fontFamily={fontFamily}
                 fontWeight={600}
                 variant="subtitle1"
+                onClick={handleToggleModal}
               >
                 <React.Fragment>{selecitonList.join(", ")}</React.Fragment>
               </Typography>
-            </Tooltip>
           )}
         </FormControl>
       </form>
 
       {/* Search entries popup */}
-      <ActionModal
-        title="Selection List"
-        children={
-          <SearchableTable
-            returnSelectedOptions={(list) => handleSelectedList(list)}
-            multipleSelection={multipleSelection}
-            handleClose={handleToggleModal}
-            tableData={tableData}
-          />
-        }
-        open={isModalOpen}
-        handleClose={handleToggleModal}
-      />
+        <ActionModal
+          title="Selection List"
+          children={
+            <ListTable
+              returnSelectedOptions={(list) => handleSelectedList(list)}
+              multipleSelection={multipleSelection}
+              handleClose={handleToggleModal}
+            />
+          }
+          open={isModalOpen}
+          handleClose={handleToggleModal}
+        />
     </Box>
   );
 };

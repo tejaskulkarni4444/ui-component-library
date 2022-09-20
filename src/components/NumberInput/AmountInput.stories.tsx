@@ -1,18 +1,20 @@
 import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import SearchableTable from './index';
+import NumberInput from './index';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
-    // title: 'Modal',
-    component: SearchableTable,
-} as ComponentMeta<typeof SearchableTable>;
+  title: 'NumberInput',
+  component: NumberInput,
+} as ComponentMeta<typeof NumberInput>;
 
 // More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
-const Template: ComponentStory<typeof SearchableTable> = (args) => <SearchableTable {...args} />;
+const Template: ComponentStory<typeof NumberInput> = (args) => <NumberInput {...args} />;
 
-export const SearchableTableBox = Template.bind({});
+export const NumberInputBox = Template.bind({});
 // More on args: https://storybook.js.org/docs/react/writing-stories/args
-SearchableTableBox.args = {
+NumberInputBox.args = {
+  label: 'insert text!',
+  fontSize: '14'
 };

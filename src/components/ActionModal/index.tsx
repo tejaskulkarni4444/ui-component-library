@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react";
-import { Modal, Typography, Stack, Box } from "@mui/material";
+import { Modal, Stack, Box } from "@mui/material";
 //@ts-ignore
 import styled from "styled-components";
 
@@ -21,15 +21,17 @@ export interface ModalProps {
 //   Styled components    //
 ////////////////////////////
 
-const StyledCloseTypography = styled(Typography)`
+const StyledCloseTypography = styled.p`
     font-weight: 500 !important;
     font-family: 'Arial' !important;
     cursor: pointer !important;
     font-size: 15px !important;
     border-radius: 50% !important;
-    padding: 0px 6px !important;
+    width: 20px;
     background-color: lightgrey !important;
-    margin-bottom: 0;
+    margin: 0;
+    text-align: center;
+    height: 20px;
 `
 
 const StyledStack = styled(Stack)`
@@ -60,15 +62,15 @@ const ActionModal = ({
             }}
         >
             <StyledStack
-                width={width}
+                width={`${width}px`}
                 bgcolor={backgroundColor}
             >
                 <Box display='flex' justifyContent='end'>
                     <StyledCloseTypography onClick={handleClose}>x</StyledCloseTypography>
                 </Box>
-                <Typography variant="h5" textAlign='center' >
+                <h3 style={{ textAlign: 'center', margin: '10px auto' }} >
                     {title}
-                </Typography>
+                </h3>
                 {children}
             </StyledStack>
         </Modal>);

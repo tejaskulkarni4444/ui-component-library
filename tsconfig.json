@@ -35,6 +35,10 @@
     "outDir": "dist",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "emitDeclarationOnly": true
-  }
+    "emitDeclarationOnly": true,
+    "lib": [
+      "ES2021.String"
+    ]
+  },
+  "exclude": ["node_modules", "dist", "**/*.stories.tsx", "**/*.stories.ts"]
 }

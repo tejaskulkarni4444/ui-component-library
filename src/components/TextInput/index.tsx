@@ -1,37 +1,57 @@
 import React from "react";
-import { Box, FormControl, Input, InputAdornment, Typography } from "@mui/material";
-import SearchIcon from '@mui/icons-material/Search';
+import { Box, FormControl, TextField, Typography } from "@mui/material";
+import { TBorder } from "../TextInputWithSearch";
+import { IReturnValueCallback } from "../NumberInput";
 
 export interface TextInputProps {
   label: string;
-  fontSize: number | string;
+  fontSize?: number | string;
   width: number | string;
   placeholder: string;
-  font: string,
+  font?: string,
   backgroundColor?: string,
-  border?: string,
+  border?: TBorder,
   className?: string,
-  effects?: string
+  effects?: string,
+  hideLabel?: boolean,
+  handleReturnValue: IReturnValueCallback
 }
 
-const TextInput = (props: TextInputProps) => {
-  return <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-    <Typography 
+const TextInput = ({
+  label = 'Test label',
+  fontSize,
+  width,
+  placeholder = 'This is placeholder',
+  backgroundColor,
+  border = 'standard',
+  className,
+  hideLabel = false,
+  handleReturnValue
+}: TextInputProps) => {
+
+  const handleSubmit = (ev: any) => {
+    console.log('evvvvv', ev.target.value)
+    if(ev.target.value) handleReturnValue(ev.target.value)
+  }
+  return <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    {!hideLabel && <Typography 
       sx={{ color: 'action.active', mr: 1, my: 0.5 }}
-      fontSize={props.fontSize}
+      fontSize={fontSize}
     >
-      {props.label}
-    </Typography>
-    <FormControl sx={{ m: 1, width: '25ch' }} variant="standard">
-      <Input
+      {label}
+    </Typography>}
+    <FormControl sx={{ m: 1, width: '25ch' }}>
+      <TextField
         id="input-with-sx"
-        placeholder={props.placeholder}
-        className=""
-        endAdornment={
-          <InputAdornment position="end">
-            <SearchIcon />
-          </InputAdornment>
-        }
+        placeholder={placeholder}
+        variant={border}
+        className={className}
+        onKeyPress={(ev: any) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            handleSubmit(ev);
+          }
+        }}
       />
     </FormControl>
   </Box>;
