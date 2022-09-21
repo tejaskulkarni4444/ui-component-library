@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Box, FormControl, TextField, Typography } from "@mui/material";
-import { handleIntergerMasking } from "../../utils/helpers";
+import { handleFormatIntegers, handleValidateInteger } from "../../utils/helpers";
 import { TBorder } from "../TextInputWithSearch";
+import { StyledValueContainer } from "../DateInput";
 
 type TInputType = 'integer' | 'decimal' | 'decimalMasking' | 'amount'
 export type IReturnValueCallback = (value: string) => void;
@@ -40,39 +41,14 @@ const NumberInput = ({
 
     const [inputValue, setInputValue] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const [formattedInput, setformattedInput] = useState('')
 
     /////////////////////
     //      handler    //
     /////////////////////
 
     const hanldeSetValue = (val: string) => {
-        //
-        // if input type is integer
-        //
-        if (type === 'integer') {
-            if (val.includes('.') || val.includes(',')) {
-                setErrorMessage('Invalid input')
-            } else {
-                setErrorMessage('')
-            }
-            setInputValue(val)
-            return;
-        }
-
-        //
-        // Separate numbers before and after decimal
-        //
-        let numbersBeforeDecimal = val.split('.')[0]
-        let numbersAfterDecimal = val.split('.')[1]
-        // @ts-ignore
-        let formattedInput = handleIntergerMasking(numbersBeforeDecimal.replaceAll(',', ''))
-
-        if (numbersAfterDecimal !== undefined) {
-            setInputValue(`${formattedInput}.${numbersAfterDecimal.slice(0, 2)}`)
-        } else {
-            setInputValue(formattedInput)
-        }
-        setErrorMessage('')
+        setInputValue(val)
     }
 
     const handleSubmit = () => {
@@ -81,7 +57,32 @@ const NumberInput = ({
         //
         if (inputValue === '') {
             setErrorMessage('Empty input not allowed')
+            if (formattedInput) setformattedInput('')
             return false;
+        }
+
+        //
+        // Check if given input only contains integers
+        //
+        if (handleValidateInteger(inputValue)) {
+            //
+            // if input type is integer
+            //
+            if (type === 'integer') {
+                if (inputValue.includes('.') || inputValue.includes(',')) {
+                    setErrorMessage('Invalid input')
+                } else {
+                    setErrorMessage('')
+                }
+                setformattedInput(inputValue)
+                return;
+            }
+            const formattedVal = handleFormatIntegers(inputValue)
+            setformattedInput(formattedVal)
+            setErrorMessage('')
+        } else {
+            setErrorMessage('Only integers are allowed')
+            return false
         }
 
         //
@@ -123,6 +124,11 @@ const NumberInput = ({
                 }}
             />
         </FormControl>
+        {formattedInput && (
+            <StyledValueContainer fontSize={fontSize}>
+                {formattedInput}
+            </StyledValueContainer>
+        )}
     </Box>;
 };
 

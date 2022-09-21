@@ -7,10 +7,10 @@ import {
   TextField
 } from "@mui/material";
 import ActionModal from "../ActionModal";
-//@ts-ignore
 import styled from "styled-components";
 import ListTable from "../ListTable";
 import { BiListUl } from 'react-icons/bi'
+import { IReturnValueCallback } from "../NumberInput";
 
 ////////////////////////////
 //        Types           //
@@ -21,7 +21,7 @@ export type TBorder = "standard" | "outlined" | "filled";
 
 export interface TextInputProps {
   label: string;
-  fontSize: number | string;
+  fontSize: string;
   width: string;
   placeholder: string;
   fontFamily: string;
@@ -37,6 +37,16 @@ export interface TextInputProps {
   searchBy: string;
   listData: Array<{}>;
   hoverEffect?: boolean;
+  onChange?: IReturnValueCallback,
+}
+
+type TTextfieldProps ={
+  fontcolor: string,
+  bordercolor: any,
+  backgroundcolor: string | undefined,
+  fontsize: string,
+  fontfamily: string,
+  width: string
 }
 
 ////////////////////////
@@ -46,14 +56,14 @@ export interface TextInputProps {
 //
 // Styled textfield with custom border color from props
 //
-const StyledTextField = styled(TextField)`
+const StyledTextField = styled(TextField)<TTextfieldProps>`
   margin: 0 10px !important;
-  font-family: ${(props: any) => props.fontFamily} !important;
+  font-family: ${(props: any) => props.fontfamily} !important;
   color: ${(props: any) => props.fontcolor} !important;
   background-color: ${(props: any) => props.backgroundcolor} !important;
   width: ${(props: any) => props.width} !important;
   .MuiInput-root {
-    font-size: ${(props: any) => props.fontSize}px !important;
+    font-size: ${(props: any) => props.fontsize} !important;
   }
   & .MuiInputBase-input {
     color: ${(props: any) => props.fontcolor} !important;
@@ -82,47 +92,47 @@ const StyledTextField = styled(TextField)`
 // TODO: remove this
 const tableData = [
   {
-    // "id": "1",
+    "id": "1",
     'name': "Retired",
     city: "London",
   },
   {
-    // "id": "2",
+    "id": "2",
     'name': "Doctor",
     city: "Madrid",
   },
   {
-    // "id": "3",
+    "id": "3",
     'name': "Architect",
     city: "Paris",
   },
   {
-    // "id": "4",
+    "id": "4",
     'name': "Engineer",
     city: "Alabama",
   },
   {
-    // "id": "5",
+    "id": "5",
     'name': "Business",
     city: "Nashik",
   },
   {
-    // "id": "6",
+    "id": "6",
     'name': "Student",
     city: "NY",
   },
   {
-    // "id": "7",
+    "id": "7",
     'name': "Service",
     city: "Alabama",
   },
   {
-    // "id": "8",
+    "id": "8",
     'name': "Teacher",
     city: "Alabama",
   },
   {
-    // "id": "9",
+    "id": "9",
     'name': "Teller",
     city: "Mumbai",
   },
@@ -130,7 +140,7 @@ const tableData = [
 
 const TextInputWithSearch = ({
   label,
-  fontSize,
+  fontSize = '14px',
   placeholder,
   fontFamily = "'Arial'",
   className,
@@ -141,7 +151,8 @@ const TextInputWithSearch = ({
   labelFontColor = "#000000",
   backgroundColor,
   width,
-  searchBy = 'name'
+  searchBy = 'name',
+  listData = tableData
 }: TextInputProps) => {
   ///////////////////////
   //      states      //
@@ -172,12 +183,17 @@ const TextInputWithSearch = ({
     //
     if (!multipleSelection && selectedOptionsList.length > 1) {
       SetNotfoundError(true);
-      setErrorMessage("Multiple values not allowed")
+      setErrorMessage("Multiple are values not allowed")
       handleToggleModal();
       return false;
     } else {
       setSelectionList([...selectedOptionsList.map((item: any) => item[searchBy])]);
       handleToggleModal();
+      
+      if(errorMessage) {
+        SetNotfoundError(false)
+        setErrorMessage('')
+      }
     }
   };
 
@@ -211,7 +227,7 @@ const TextInputWithSearch = ({
     //
     if (!multipleSelection && splittedValues.length > 1) {
       SetNotfoundError(true);
-      setErrorMessage("Multiple values not allowed")
+      setErrorMessage("Multiple are values not allowed")
       return false;
     }
 
@@ -219,7 +235,7 @@ const TextInputWithSearch = ({
     // Check if the array is not empty
     //
     if (splittedValues.length > 0) {
-      tableData.filter((currentItem: any) => {
+      listData.filter((currentItem: any) => {
         splittedValues.some((item: any) => {
           //
           // Check if current item in loop matches splitted input values
@@ -235,6 +251,10 @@ const TextInputWithSearch = ({
         SetNotfoundError(false);
         setSelectionList([...finalMatchingArray]);
         setInputValue("");
+        if(errorMessage) {
+          setErrorMessage('')
+          SetNotfoundError(false)
+        }
       } else {
         SetNotfoundError(true);
         setErrorMessage("Invalid Input")
@@ -246,10 +266,10 @@ const TextInputWithSearch = ({
     <Box sx={{ display: "flex", alignItems: "center", fontFamily: fontFamily }}>
       {/* Input label */}
       <Typography
-        fontSize={`${fontSize}px`}
+        fontSize={fontSize}
         fontFamily={fontFamily}
         fontWeight={500}
-        color={labelFontColor}
+        color={fontColor}
       >
         {label}
       </Typography>
@@ -269,8 +289,8 @@ const TextInputWithSearch = ({
             placeholder={placeholder}
             className={className}
             autoComplete="off"
-            fontSize={fontSize}
-            fontFamily={fontFamily}
+            fontsize={fontSize}
+            fontfamily={fontFamily}
             fontcolor={fontColor}
             backgroundcolor={backgroundColor}
             bordercolor={borderColor}
@@ -291,17 +311,13 @@ const TextInputWithSearch = ({
                   <div onClick={handleToggleModal}>
                     <BiListUl
                       style={{
-                        fontSize: `${fontSize}px`,
+                        fontSize: '1.2em',
                         cursor: "pointer",
                         borderRadius: "50%",
                         maxWidth: "20px",
                         width: "100%",
                         padding: "3px",
-                        color: `${borderColor} !important`,
-                        // "&:hover": {
-                        //   backgroundColor: "lightgray",
-                        //   color: "#ffffff !important",
-                        // },
+                        color: `${borderColor} !important`
                       }}
                     />
                   </div>
@@ -337,6 +353,7 @@ const TextInputWithSearch = ({
               returnSelectedOptions={(list) => handleSelectedList(list)}
               multipleSelection={multipleSelection}
               handleClose={handleToggleModal}
+              tableData={listData}
             />
           }
           open={isModalOpen}

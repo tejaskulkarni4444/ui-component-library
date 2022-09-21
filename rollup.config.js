@@ -41,7 +41,7 @@ export default [
         terser(),
         analyze({
           hideDeps: true,
-          summaryOnly: true
+          // summaryOnly: true,
         }),
         visualizer()
       ],
@@ -50,7 +50,7 @@ export default [
       input: "dist/esm/index.d.ts",
       output: [{ file: "dist/index.d.ts", format: "esm" }],
       plugins: [dts()],
-      external: ["react", "react-dom"]
+      external: ["react", "react-dom", "@mui/material", "react-table", "styled-components" ]
     //   external: [/\.(css|less|scss)$/],
     },
   ];

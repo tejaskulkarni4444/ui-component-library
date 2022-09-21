@@ -59,77 +59,76 @@ interface ICloseCallback {
 }
 
 interface SearchableTableProps {
-  tableData?: Array<{}>,
+  tableData: Array<{}>,
   returnSelectedOptions: IReturnValueCallback;
   multipleSelection: boolean;
   handleClose: ICloseCallback;
 }
 
 export default function ListTable({
-  returnSelectedOptions
+  returnSelectedOptions,
+  tableData
 }: SearchableTableProps) {
   ////////////////////////////
   //         states         //
   ////////////////////////////
 
-  // const [ selectionList, setSelectionList] = useState <any[]>([])
-  const [ errorMessage, setErrorMessage] = useState('')
+  // const data = React.useMemo(
+  //   () => [
+  //     {
+  //       id: "1",
+  //       name: "Retired",
+  //       city: "London",
+  //     },
+  //     {
+  //       id: "2",
+  //       name: "Doctor",
+  //       city: "Madrid",
+  //     },
+  //     {
+  //       id: "3",
+  //       name: "Architect",
+  //       city: "Paris",
+  //     },
+  //     {
+  //       id: "4",
+  //       name: "Engineer",
+  //       city: "Alabama",
+  //     },
+  //     {
+  //       id: "5",
+  //       name: "Business",
+  //       city: "Nashik",
+  //     },
+  //     {
+  //       id: "6",
+  //       name: "Student",
+  //       city: "NY",
+  //     },
+  //     {
+  //       id: "7",
+  //       name: "Service",
+  //       city: "Alabama",
+  //     },
+  //     {
+  //       id: "8",
+  //       name: "Teacher",
+  //       city: "Alabama",
+  //     },
+  //     {
+  //       id: "9",
+  //       name: "Teller",
+  //       city: "Mumbai",
+  //     },
+  //   ],
+  //   []
+  // );
 
-
-  const data = React.useMemo(
-    () => [
-      {
-        id: "1",
-        name: "Retired",
-        city: "London",
-      },
-      {
-        id: "2",
-        name: "Doctor",
-        city: "Madrid",
-      },
-      {
-        id: "3",
-        name: "Architect",
-        city: "Paris",
-      },
-      {
-        id: "4",
-        name: "Engineer",
-        city: "Alabama",
-      },
-      {
-        id: "5",
-        name: "Business",
-        city: "Nashik",
-      },
-      {
-        id: "6",
-        name: "Student",
-        city: "NY",
-      },
-      {
-        id: "7",
-        name: "Service",
-        city: "Alabama",
-      },
-      {
-        id: "8",
-        name: "Teacher",
-        city: "Alabama",
-      },
-      {
-        id: "9",
-        name: "Teller",
-        city: "Mumbai",
-      },
-    ],
-    []
-  );
+  const data = React.useMemo(() => tableData, [])
 
   const columnsData: any = Object.keys(data[0]).reduce(
     (colArray: Array<{}>, key: string) => {
-      if (key && key !== "id")
+      // if (key && key !== "id")
         colArray.push({ Header: key, accessor: key, width: 100 });
       return colArray;
     },
@@ -163,7 +162,7 @@ export default function ListTable({
   const { 
     getTableProps, getTableBodyProps, 
     headerGroups, rows, prepareRow,
-    state 
+    state
   } =
     useTable(
       {
@@ -178,10 +177,11 @@ export default function ListTable({
   // Close modal and return selected options
   //
   const handleCloseMoal = () => {
+    // @ts-ignore
     let selectionData = Object.keys(state.selectedRowIds).map((id) => rows.find((row) => row.id === id)?.original)
     returnSelectedOptions(selectionData)
   }
-
+  
   return (
     <>
       <div>
