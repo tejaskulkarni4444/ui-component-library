@@ -10,7 +10,6 @@ import ActionModal from "../ActionModal";
 import styled from "styled-components";
 import ListTable from "../ListTable";
 import { BiListUl } from 'react-icons/bi'
-import { IReturnValueCallback } from "../NumberInput";
 
 ////////////////////////////
 //        Types           //
@@ -18,6 +17,7 @@ import { IReturnValueCallback } from "../NumberInput";
 
 type TSelectionList = string[];
 export type TBorder = "standard" | "outlined" | "filled";
+type TCallBack = (value: Array<any>) => void;
 
 export interface TextInputProps {
   label: string;
@@ -37,7 +37,7 @@ export interface TextInputProps {
   searchBy: string;
   listData: Array<{}>;
   hoverEffect?: boolean;
-  onChange?: IReturnValueCallback,
+  handleReturnValue?: TCallBack,
 }
 
 type TTextfieldProps ={
@@ -152,7 +152,8 @@ const TextInputWithSearch = ({
   backgroundColor,
   width,
   searchBy = 'name',
-  listData = tableData
+  listData = tableData,
+  handleReturnValue
 }: TextInputProps) => {
   ///////////////////////
   //      states      //
@@ -255,6 +256,11 @@ const TextInputWithSearch = ({
           setErrorMessage('')
           SetNotfoundError(false)
         }
+        
+        //
+        // check if callack exists then return value to callback
+        //
+        if(handleReturnValue) handleReturnValue(finalMatchingArray)
       } else {
         SetNotfoundError(true);
         setErrorMessage("Invalid Input")

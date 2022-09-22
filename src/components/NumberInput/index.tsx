@@ -106,7 +106,6 @@ const NumberInput = ({
             error={errorMessage ? true : false}
         >
             <TextField
-                id="input-with-sx"
                 placeholder={placeholder}
                 type='text'
                 className={className}

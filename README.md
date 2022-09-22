@@ -17,11 +17,55 @@ npm i react-component-library-sutradhar
 
 ```javascript
 import { Textfield } from 'react-components-library-sutradhar'
+/* errorState Example:
+  {
+        isError: false,
+        errorMessage: ''
+    }
+*/
+function App() {
+  return <TextField
+          label={label}
+          placeholder='Enter date'
+          border={border}
+          width='200px'
+          fontSize={fontSize}
+          fontColor={fontColor}
+          handleReturnValue={handleValue}
+          error={errorState}
+        />
+}
+```
+```javascript
+import { TextInputWithSearch } from 'react-components-library-sutradhar'
 
 function App() {
-  return <Textfield 
-            label="Add label here"
-            placeholder="Enter name"
-          />
+  return <TextInputWithSearch
+          fontFamily='Arial'
+          label='Test Label'
+          fontSize='14px'
+          fontColor='#000000'
+          listData={testData}
+          placeholder='Enter text'
+          searchBy='first<Name'
+          width='200px'
+          handleReturnValue={handleSelectedValues}
+        />
+}
+```
+
+```javascript
+import { NumberInput } from 'react-components-library-sutradhar'
+
+function App() {
+  return <NumberInput
+            type={'integer' | 'decimal' | 'decimalMasking' | 'amount'}
+            label='Test label'
+            fontSize='14px'
+            font='Arial'
+            width='200px'
+            placeholder='Enter text'
+            handleReturnValue={handleReturnedValue}
+        />
 }
 ```
