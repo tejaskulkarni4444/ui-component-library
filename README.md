@@ -11,7 +11,10 @@ To install and use the components in the library run below commands:
 ```bash
 npm i react-component-library-sutradhar
 ```
-    
+#### Note: In case of missing dependecy error, run below command: 
+```bash
+npm i @mui/material react react-dom react-table styled-components react-icons @emotion/styled
+```
 ## Usage/Examples
 
 ```javascript
@@ -89,7 +92,9 @@ import { NumberInput } from 'react-components-library-sutradhar'
   fontSize: '14px';
   fontColor: '#000000'
   type: 'integer' | 'decimal' | 'decimalMasking' | 'amount'
-  handleReturnValue: callbackfunction
+  handleReturnValue: callbackfunction,
+  // To provide range input i.e. To & From values 
+  isRangeInput: true | false
 */
 
 function App() {
@@ -102,6 +107,36 @@ function App() {
           width='200px'
           placeholder='Enter text'
           handleReturnValue={handleReturnedValue}
+          isRangeInput={false}
+        />
+}
+```
+
+```javascript
+import { DateInput } from 'react-components-library-sutradhar'
+
+/* Props Example: 
+  border: "standard" | "outlined" | "filled";
+  width: '100px' '50%';
+  fontSize: '14px';
+  fontColor: '#000000'
+  type: 'integer' | 'decimal' | 'decimalMasking' | 'amount'
+  handleReturnValue: callbackfunction,
+  // To provide range input i.e. To & From values 
+  isRangeInput: true | false
+*/
+
+function App() {
+  return <DateInput
+          type= 'decimalMasking'
+          label='Test label'
+          border='outlined'
+          fontSize='14px'
+          font='Arial'
+          width='200px'
+          placeholder='Enter text'
+          handleReturnValue={handleReturnedValue}
+          isRangeInput={false}
         />
 }
 ```

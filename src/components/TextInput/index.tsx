@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import TextField from "@mui/material/TextField"
 import FormControl from "@mui/material/FormControl"
 import { TBorder } from "../TextInputWithSearch";
 import { IReturnValueCallback } from "../NumberInput";
 import styled from "styled-components";
+
 ///////////////////////////
 //         Types         //
 ///////////////////////////
 
-type TError = {
+export type TError = {
   isError: boolean,
-  errorMessage: string
+  errorMessage: string,
+  index: number
 }
 export interface TextInputProps {
   label: string;
@@ -24,12 +26,13 @@ export interface TextInputProps {
   className?: string,
   effects?: string,
   hideLabel?: boolean,
-  error?: TError
+  error?:  Array<TError>,
   handleReturnValue: IReturnValueCallback,
   borderColor?: string;
   fontColor?: string | undefined;
   labelFontColor?: string;
   hoverEffect?: boolean;
+  isRangeInput?: boolean
 }
 
 type TTextfieldProps = {
@@ -100,14 +103,33 @@ const TextInput = ({
   className,
   hideLabel = false,
   handleReturnValue,
-  error,
+  error = [],
   labelFontColor,
   fontColor,
-  borderColor
+  borderColor,
+  isRangeInput = false
 }: TextInputProps) => {
 
-  const handleSubmit = (ev: any) => {
-    handleReturnValue(ev.target.value)
+  /////////////////////////////
+  //          states         //
+  ////////////////////////////
+
+  const [multiInput, setMultipInput] = useState(['', ''])
+
+  ////////////////////////////
+  //        handlers        //
+  ///////////////////////////
+
+  const handleChange = (ev: any, index = 0) => {
+    let temp: Array<string> = multiInput;
+    let value = ev.target.value;
+
+    temp[index] = value;
+    setMultipInput([...temp])
+  }
+
+  const handleSubmit = () => {
+    handleReturnValue(multiInput)
   }
 
   return (
@@ -119,25 +141,55 @@ const TextInput = ({
       >
         {label}
       </StyledParagraph>}
-      <FormControl error={error?.isError}>
+      <FormControl error={error?.length > 0 ? true : false} style={{
+        flexDirection: isRangeInput ? 'row' : 'column'
+      }}>
         <StyledTextField
           placeholder={placeholder}
           variant={border}
-          error={error?.isError}
-          helperText={error?.isError && error.errorMessage}
+          error={error[0] && error[0].isError === true}
+          helperText={error[0] && error[0].isError && error[0].errorMessage}
           className={className}
           fontcolor={fontColor}
           width={width}
           fontsize={fontSize}
           bordercolor={borderColor}
           backgroundcolor={backgroundColor}
+          onChange={(ev) => handleChange(ev)}
           onKeyPress={(ev: any) => {
             if (ev.key === "Enter") {
               ev.preventDefault();
-              handleSubmit(ev);
+              handleSubmit();
             }
           }}
         />
+        {isRangeInput &&
+          <div style={{
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <span>To</span>
+            <StyledTextField
+              placeholder={placeholder}
+              variant={border}
+              error={error[1] && error[1].isError}
+              helperText={error[1] && error[1].isError && error[1].errorMessage}
+              className={className}
+              fontcolor={fontColor}
+              width={width}
+              fontsize={fontSize}
+              bordercolor={borderColor}
+              backgroundcolor={backgroundColor}
+              onChange={(ev) => handleChange(ev, 1)}
+              onKeyPress={(ev: any) => {
+                if (ev.key === "Enter") {
+                  ev.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
+          </div>
+        }
       </FormControl>
     </StyleldDivContainer>
 

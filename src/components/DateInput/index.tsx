@@ -1,8 +1,7 @@
-import { formatMuiErrorMessage } from '@mui/utils'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { validDateRegEx } from '../../utils/helpers'
-import TextInput, { TextInputProps } from '../TextInput'
+import TextInput, { TError, TextInputProps } from '../TextInput'
 import { TBorder } from '../TextInputWithSearch'
 
 interface IDateInputProps extends TextInputProps {
@@ -30,27 +29,57 @@ export default function DateInput({
     label = 'Date label',
     fontColor = '#000000'
 }: IDateInputProps) {
-    const defaultErrorState = {
-        isError: false,
-        errorMessage: ''
+    const defaultErrorState = [
+        {
+            isError: false,
+            errorMessage: '',
+            index: 0
+        },
+        {
+            isError: false,
+            errorMessage: '',
+            index: 1
+        }
+    ]
+
+    const [displayValue, setDisplayValue] = useState<Array<string>>([]);
+    const [error, setError] = useState<Array<TError>>(defaultErrorState);
+
+    //
+    // validates the submitted values before returning
+    //
+    const handleValue = (valueArray: Array<string>) => {
+        if (isRangeInput && valueArray.length > 0) {
+            for (let i = 0; i < valueArray.length; i++) {
+                let validation = handleValidation(valueArray[i], i);
+                // if(validation === false) break;
+            }
+            // valueArray.map((val: string, index) => {
+            //     handleValidation(val, index)
+            // })
+        } else {
+            handleValidation(valueArray[0])
+        }
+        return displayValue
     }
 
-    const [displayValue, setDisplayValue] = useState("");
-    const [error, setError] = useState(defaultErrorState);
-
-    const handleValue = async (value: string) => {
-        if (value === displayValue) return;
-        if (!value) {
-            setError({
-                isError: true,
-                errorMessage: 'Invalid Input'
-            })
-            return;
-        }
-
-        let formattedDate: string;
+    const handleValidation = (value: string, index = 0) => {
+        let formattedDate = '';
+        let hasError = '';
+        let errorState = error; //Error state holder
         // Trim input value to remove empty spaces if any
         let trimmedValue = value.replace(/\s/g, "");
+
+        // if (value === displayValue) return;
+        if (!value) {
+            errorState[index] = {
+                isError: true,
+                errorMessage: value === '' ? 'Date cannot be empty' : 'Invalid Input',
+                index: index
+            }
+            setError([...errorState])
+            return false;
+        }
 
         //
         // return false for invalid inputs
@@ -61,7 +90,7 @@ export default function DateInput({
             trimmedValue.length < 6 ||
             trimmedValue.length > 8
         ) {
-            formattedDate = "Invalid date or format.";
+            hasError = "Invalid date or format.";
         }
 
         //
@@ -77,25 +106,37 @@ export default function DateInput({
 
             let regexTest = validDateRegEx.test(formattedDate);
             if (!regexTest) {
-                formattedDate = "Invalid date!"
+                hasError = "Invalid date!"
             }
         } else {
             formattedDate = ''
         }
 
-        if (formattedDate === '' || formattedDate.includes('Invalid')) {
-            const err = {
+        //
+        // Check if data is empty or has error
+        //
+        if (formattedDate === '' || hasError.includes('Invalid')) {
+            errorState[index] = {
                 isError: true,
-                errorMessage: formattedDate ? formattedDate : 'Invalid Date'
+                errorMessage: hasError ? hasError : 'Invalid Date',
+                index
             }
-            setError({ ...err })
+            setError([...errorState])
             return false;
         } else {
-            if (error.isError) setError({ ...defaultErrorState })
-            setDisplayValue(formattedDate)
+            // Return error if error is present in value
+            if (Object.entries(error).length > 0) {
+                errorState[index].isError = false
+                errorState[index].errorMessage = ''
+                setError([...errorState])
+            }
+
+            let tempDateHolder = displayValue;
+            tempDateHolder[index] = formattedDate
+            setDisplayValue([...tempDateHolder])
+            return true;
         }
     }
-
     return (
         <StyleldDivContainer>
             <TextInput
@@ -106,14 +147,14 @@ export default function DateInput({
                 fontSize={fontSize}
                 fontColor={fontColor}
                 handleReturnValue={handleValue}
+                isRangeInput={isRangeInput}
                 error={error}
             />
-            {displayValue && (
+            {displayValue && !error[0].isError && !error[1].isError && (
                 <StyledValueContainer fontSize={fontSize}>
-                    {displayValue}
+                    {isRangeInput ? displayValue.join(' To ') : displayValue.join('')}
                 </StyledValueContainer>
             )}
         </StyleldDivContainer>
-
     )
 }
