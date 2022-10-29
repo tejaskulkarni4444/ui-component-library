@@ -17,6 +17,9 @@ npm i @mui/material react react-dom react-table styled-components react-icons @e
 ```
 ## Usage/Examples
 
+### TextField
+TextField accepts regular string input.
+
 ```javascript
 import { Textfield } from 'react-components-library-sutradhar'
 /* Props Example: 
@@ -43,6 +46,10 @@ function App() {
         />
 }
 ```
+### TextInput with Search Modal
+TextInputWithSearch accepts string input. On presssing enter the provided value to the input can be submitted.
+If the provided values matches the provided data options the matched value will be set.
+
 ```javascript
 import { TextInputWithSearch } from 'react-components-library-sutradhar'
 /* Props Example: 
@@ -82,6 +89,14 @@ function App() {
         />
 }
 ```
+### NumberInput
+NumberInput accepts integers as input. \
+4 types of integer inputs:\
+&nbsp;&nbsp;&nbsp; 1. integer: accepts numbers. \
+&nbsp;&nbsp;&nbsp; 2. decimal: accepts float values and with 2 digits after the decimal. \
+&nbsp;&nbsp;&nbsp; 3. amount: accepts integers and masks the value with commas. Eg. 10,200 \
+&nbsp;&nbsp;&nbsp; 4. decimalMasking: Masks decimal values with commas. 
+
 
 ```javascript
 import { NumberInput } from 'react-components-library-sutradhar'
@@ -111,6 +126,11 @@ function App() {
         />
 }
 ```
+### DateInput
+Accepts integer values as dates. If the input format is correct then input value is accpeted as enter is pressed. \
+Supportted formats: ddmmyy, ddmmyyyy  \
+Eg. 010211 (ddmmyy) = 01/02/2011 \
+01042022 (ddmmyyyyy) = 01/04/2022
 
 ```javascript
 import { DateInput } from 'react-components-library-sutradhar'

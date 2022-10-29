@@ -146,6 +146,8 @@ export default function DateInput({
                 width='200px'
                 fontSize={fontSize}
                 fontColor={fontColor}
+                // TODO: fix type warning
+                // @ts-ignore
                 handleReturnValue={handleValue}
                 isRangeInput={isRangeInput}
                 error={error}

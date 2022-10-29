@@ -50,11 +50,10 @@ const Styles = styled.div`
 //         Types            //
 //////////////////////////////
 
-interface IReturnValueCallback {
+export interface IReturnValueCallback {
   (list: any): void;
 }
-
-interface ICloseCallback {
+export interface ICloseCallback {
   (): void;
 }
 
