@@ -233,6 +233,7 @@ const NumberInput = ({
                 type='text'
                 className={className}
                 fontcolor={fontColor}
+                dir={type === 'amount' ? 'rtl' : 'ltr'}
                 width={width}
                 fontsize={fontSize}
                 bordercolor={borderColor}

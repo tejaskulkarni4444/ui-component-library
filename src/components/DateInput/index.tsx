@@ -82,6 +82,15 @@ export default function DateInput({
         }
 
         //
+        // if input length = 4 add 01 as date to the input 
+        //
+        if (
+            trimmedValue && trimmedValue.length === 4
+        ) {
+            trimmedValue = `01${trimmedValue}`
+        }
+
+        //
         // return false for invalid inputs
         //
         if (
