@@ -4,6 +4,7 @@ import FormControl from "@mui/material/FormControl"
 import { TBorder } from "../TextInputWithSearch";
 import { IReturnValueCallback } from "../NumberInput";
 import styled from "styled-components";
+import { Typography } from "@mui/material";
 
 ///////////////////////////
 //         Types         //
@@ -26,7 +27,7 @@ export interface TextInputProps {
   className?: string,
   effects?: string,
   hideLabel?: boolean,
-  error?:  Array<TError>,
+  error?: Array<TError>,
   handleReturnValue: IReturnValueCallback,
   borderColor?: string;
   fontColor?: string | undefined;
@@ -115,6 +116,7 @@ const TextInput = ({
   ////////////////////////////
 
   const [multiInput, setMultipInput] = useState(['', ''])
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   ////////////////////////////
   //        handlers        //
@@ -129,7 +131,13 @@ const TextInput = ({
   }
 
   const handleSubmit = () => {
+    setIsSubmitted(true)
     handleReturnValue(multiInput)
+  }
+
+  const handleBlur = () => {
+    setIsSubmitted(true)
+    if(handleReturnValue) handleReturnValue(multiInput)
   }
 
   return (
@@ -162,6 +170,7 @@ const TextInput = ({
               handleSubmit();
             }
           }}
+          onBlur={handleBlur}
         />
         {isRangeInput &&
           <div style={{
@@ -191,6 +200,20 @@ const TextInput = ({
           </div>
         }
       </FormControl>
+      {!handleReturnValue && multiInput[0] && isSubmitted && multiInput.length > 0 && <Typography
+        sx={{
+          mr: 1,
+          my: 0.5,
+          textTransform: "uppercase",
+          cursor: "pointer",
+        }}
+        fontSize={`${fontSize}px`}
+        fontFamily={fontFamily}
+        fontWeight={600}
+        variant="subtitle1"
+      >
+        <React.Fragment>{multiInput[0]}</React.Fragment>
+      </Typography>}
     </StyleldDivContainer>
 
   );

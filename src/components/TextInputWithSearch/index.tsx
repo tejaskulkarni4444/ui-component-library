@@ -311,6 +311,7 @@ const TextInputWithSearch = ({
                 handleSubmit(ev);
               }
             }}
+            onBlur={(ev) => handleSubmit(ev)}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">

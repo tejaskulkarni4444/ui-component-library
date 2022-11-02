@@ -250,6 +250,7 @@ const NumberInput = ({
                         handleSubmit();
                     }
                 }}
+                onBlur={handleSubmit}
             />
             {isRangeInput &&
                 <div style={{
