@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import TextField from "@mui/material/TextField"
 import FormControl from "@mui/material/FormControl"
 import { TBorder } from "../TextInputWithSearch";
 import { IReturnValueCallback } from "../NumberInput";
 import styled from "styled-components";
 import { Typography } from "@mui/material";
+import { defaultErrorState } from "../DateInput";
 
 ///////////////////////////
 //         Types         //
@@ -29,11 +30,15 @@ export interface TextInputProps {
   hideLabel?: boolean,
   error?: Array<TError>,
   handleReturnValue: IReturnValueCallback,
-  borderColor?: string;
-  fontColor?: string | undefined;
-  labelFontColor?: string;
-  hoverEffect?: boolean;
-  isRangeInput?: boolean
+  borderColor?: string,
+  fontColor?: string | undefined,
+  labelFontColor?: string,
+  hoverEffect?: boolean,
+  isRangeInput?: boolean,
+  clearInput?: boolean,
+  minChars?: string | number,
+  maxChars?: string | number,
+  defaultValue?: string,
 }
 
 type TTextfieldProps = {
@@ -108,7 +113,11 @@ const TextInput = ({
   labelFontColor,
   fontColor,
   borderColor,
-  isRangeInput = false
+  isRangeInput = false,
+  clearInput = false,
+  defaultValue,
+  minChars,
+  maxChars
 }: TextInputProps) => {
 
   /////////////////////////////
@@ -117,12 +126,39 @@ const TextInput = ({
 
   const [multiInput, setMultipInput] = useState(['', ''])
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [localError, setLocalError] = useState<Array<TError>>(defaultErrorState);
+
+  //
+  // Input references used for focusing
+  //
+  const input1Ref: any = useRef(null)
+  const input2Ref: any = useRef(null)
+
+  //////////////////////
+  //     useeffect    //
+  /////////////////////
+
+  useEffect(() => {
+    const defaultInput = ['', '']
+    setMultipInput(defaultInput)
+
+    // Uncomment below line if empty input needs to be returned
+    if (handleReturnValue && clearInput) handleReturnValue(defaultInput)
+  }, [clearInput])
 
   ////////////////////////////
   //        handlers        //
   ///////////////////////////
 
   const handleChange = (ev: any, index = 0) => {
+    //
+    // Check if max char limit has exceeded
+    //
+    if (maxChars && ev.target.value.length > maxChars) return false;
+
+    // Set isSubmitted to false to verify new value
+    setIsSubmitted(false);
+
     let temp: Array<string> = multiInput;
     let value = ev.target.value;
 
@@ -130,14 +166,66 @@ const TextInput = ({
     setMultipInput([...temp])
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (isLastInput = false) => {
+    const defaultInputValue = ['', '']
+    let errorState = localError; //Error state holder
+
+    // 
+    // if input is empty and default value exists
+    // assign default value to input
+    //
+    if (multiInput.toString() === defaultInputValue.toString() && defaultValue) {
+      setMultipInput([defaultValue, isRangeInput ? defaultValue : ''])
+    }
+
+    if (isRangeInput && !isLastInput) {
+      input2Ref.current.focus()
+      return;
+    }
+
+    //
+    // check if submitted input is less than provided min characters
+    // 
+    if (minChars) {
+      if (isRangeInput) {
+        if (multiInput[0].length < minChars) {
+          errorState[0] = {
+            isError: true,
+            errorMessage: `Minimum input length should be ${minChars}`,
+            index: 0
+          }
+          setLocalError([...errorState])
+          return false;
+        }
+        if (multiInput[1].length < minChars) {
+          errorState[1] = {
+            isError: true,
+            errorMessage: `Minimum input length should be ${minChars}`,
+            index: 1
+          }
+          setLocalError([...errorState])
+          return false;
+        }
+      } else {
+        if (multiInput[0].length < minChars) {
+          errorState[0] = {
+            isError: true,
+            errorMessage: `Minimum input length should be ${minChars}`,
+            index: 0
+          }
+          setLocalError([...errorState])
+          return false;
+        }
+      }
+    }
+
     setIsSubmitted(true)
-    handleReturnValue(multiInput)
+    if (handleReturnValue) handleReturnValue(multiInput)
   }
 
   const handleBlur = () => {
     setIsSubmitted(true)
-    if(handleReturnValue) handleReturnValue(multiInput)
+    if (handleReturnValue) handleReturnValue(multiInput)
   }
 
   return (
@@ -155,8 +243,10 @@ const TextInput = ({
         <StyledTextField
           placeholder={placeholder}
           variant={border}
-          error={error[0] && error[0].isError === true}
-          helperText={error[0] && error[0].isError && error[0].errorMessage}
+          error={(error[0] && error[0].isError === true) || (localError[0] && localError[0].isError)}
+          helperText={error[0] && error[0].isError ? error[0].errorMessage : localError[0].errorMessage}
+          value={multiInput[0]}
+          inputRef={input1Ref}
           className={className}
           fontcolor={fontColor}
           width={width}
@@ -170,7 +260,7 @@ const TextInput = ({
               handleSubmit();
             }
           }}
-          onBlur={handleBlur}
+          onBlur={() => isRangeInput ? '' : handleSubmit(false)}
         />
         {isRangeInput &&
           <div style={{
@@ -181,9 +271,11 @@ const TextInput = ({
             <StyledTextField
               placeholder={placeholder}
               variant={border}
-              error={error[1] && error[1].isError}
-              helperText={error[1] && error[1].isError && error[1].errorMessage}
+              error={(error[1] && error[1].isError === true) || (localError[1] && localError[1].isError)}
+              helperText={error[1] && error[1].isError ? error[1].errorMessage : localError[1].errorMessage}
               className={className}
+              inputRef={input2Ref}
+              value={multiInput[1]}
               fontcolor={fontColor}
               width={width}
               fontsize={fontSize}
@@ -193,9 +285,10 @@ const TextInput = ({
               onKeyPress={(ev: any) => {
                 if (ev.key === "Enter") {
                   ev.preventDefault();
-                  handleSubmit();
+                  handleSubmit(true);
                 }
               }}
+              onBlur={() => handleSubmit(true)}
             />
           </div>
         }
@@ -212,7 +305,7 @@ const TextInput = ({
         fontWeight={600}
         variant="subtitle1"
       >
-        <React.Fragment>{multiInput[0]}</React.Fragment>
+        <React.Fragment>{isRangeInput ? `${multiInput[0]} TO ${multiInput[1]}` : multiInput[0]}</React.Fragment>
       </Typography>}
     </StyleldDivContainer>
 

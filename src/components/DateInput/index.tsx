@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { validDateRegEx } from '../../utils/helpers'
 import TextInput, { TError, TextInputProps } from '../TextInput'
@@ -20,30 +20,38 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
   align-items: center;
   font-size: ${(props: any) => props.fontSize};
   font-weight: 600
-`
+  `
+  export const defaultErrorState = [
+      {
+          isError: false,
+          errorMessage: '',
+          index: 0
+      },
+      {
+          isError: false,
+          errorMessage: '',
+          index: 1
+      }
+  ]
 
-export default function DateInput({
+  export default function DateInput({
     isRangeInput = false,
     border = 'standard',
     fontSize = '16px',
     label = 'Date label',
-    fontColor = '#000000'
+    fontColor = '#000000',
+    clearInput = false,
+    minChars = 6,
+    maxChars = 8
 }: IDateInputProps) {
-    const defaultErrorState = [
-        {
-            isError: false,
-            errorMessage: '',
-            index: 0
-        },
-        {
-            isError: false,
-            errorMessage: '',
-            index: 1
-        }
-    ]
 
     const [displayValue, setDisplayValue] = useState<Array<string>>([]);
     const [error, setError] = useState<Array<TError>>(defaultErrorState);
+    const defaultDate = `0104${new Date().getFullYear()}` // Default date value if input is empty
+
+    useEffect(() => {
+        setDisplayValue([])
+    }, [clearInput])
 
     //
     // validates the submitted values before returning
@@ -54,27 +62,32 @@ export default function DateInput({
                 let validation = handleValidation(valueArray[i], i);
                 // if(validation === false) break;
             }
-            // valueArray.map((val: string, index) => {
-            //     handleValidation(val, index)
-            // })
         } else {
             handleValidation(valueArray[0])
         }
         return displayValue
     }
 
-    const handleValidation = (value: string, index = 0) => {
+    const handleValidation = (currentValue: string, index = 0) => {
         let formattedDate = '';
         let hasError = '';
         let errorState = error; //Error state holder
         // Trim input value to remove empty spaces if any
-        let trimmedValue = value.replace(/\s/g, "");
+        let trimmedValue = currentValue.replace(/\s/g, "");
 
-        // if (value === displayValue) return;
-        if (!value) {
+        console.log(currentValue)
+        if ((!currentValue || currentValue === '') && defaultDate) {
+            console.log('first')
+            trimmedValue = defaultDate
+        }
+
+        // 
+        // if the submitted input is less than min characters accepted.
+        // 
+        if (minChars && trimmedValue.length < minChars) {
             errorState[index] = {
                 isError: true,
-                errorMessage: value === '' ? 'Date cannot be empty' : 'Invalid Input',
+                errorMessage: `Minimum Date length should be ${minChars}`,
                 index: index
             }
             setError([...errorState])
@@ -107,12 +120,11 @@ export default function DateInput({
         //
         if (trimmedValue.length === 6 || trimmedValue.length === 8) {
             formattedDate = trimmedValue.slice(0, 2) + '/' + trimmedValue.slice(2, 4) + '/20'
-                + trimmedValue.slice(trimmedValue.length - 2);;
+                + trimmedValue.slice(trimmedValue.length - 2);
 
             //
             // Check if date month and year are valid
             //
-
             let regexTest = validDateRegEx.test(formattedDate);
             if (!regexTest) {
                 hasError = "Invalid date!"
@@ -142,6 +154,36 @@ export default function DateInput({
 
             let tempDateHolder = displayValue;
             tempDateHolder[index] = formattedDate
+
+            // Conver dates into time stamp for comparison
+            const d1 = new Date(tempDateHolder[0])
+            const d2 = new Date(tempDateHolder[1])
+            const dateTimeStamp = new Date(formattedDate) 
+            const currentDate = new Date();
+
+            if (dateTimeStamp > currentDate) {
+                errorState[index] = {
+                    isError: true,
+                    errorMessage: 'Date must be less than or equal to present date!',
+                    index
+                }
+                setError([...errorState])
+                return false;
+            }
+
+            //
+            // check if first date is greater than second date
+            //
+            if (d1 > d2) {
+                errorState[1] = {
+                    isError: true,
+                    errorMessage: 'Second date should be greater than first date!',
+                    index: 1
+                }
+                setError([...errorState])
+                return false;
+            }
+
             setDisplayValue([...tempDateHolder])
             return true;
         }
@@ -160,6 +202,8 @@ export default function DateInput({
                 handleReturnValue={handleValue}
                 isRangeInput={isRangeInput}
                 error={error}
+                clearInput={clearInput}
+                maxChars={maxChars}
             />
             {displayValue && !error[0].isError && !error[1].isError && (
                 <StyledValueContainer fontSize={fontSize}>

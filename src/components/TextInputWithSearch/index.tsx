@@ -1,4 +1,4 @@
-import React,{ useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   FormControl,
@@ -37,10 +37,14 @@ export interface TextInputProps {
   searchBy: string;
   listData: Array<{}>;
   hoverEffect?: boolean;
+  minChars: string | number,
+  maxChars: string | number,
+  defaultValue: string,
+  clearInput?: boolean,
   handleReturnValue?: TCallBack,
 }
 
-type TTextfieldProps ={
+type TTextfieldProps = {
   fontcolor: string,
   bordercolor: any,
   backgroundcolor: string | undefined,
@@ -56,7 +60,7 @@ type TTextfieldProps ={
 //
 // Styled textfield with custom border color from props
 //
-const StyledTextField = styled(TextField)<TTextfieldProps>`
+const StyledTextField = styled(TextField) <TTextfieldProps>`
   margin: 0 10px !important;
   font-family: ${(props: any) => props.fontfamily} !important;
   color: ${(props: any) => props.fontcolor} !important;
@@ -153,6 +157,10 @@ const TextInputWithSearch = ({
   width,
   searchBy = 'name',
   listData = tableData,
+  minChars,
+  maxChars,
+  defaultValue,
+  clearInput,
   handleReturnValue
 }: TextInputProps) => {
   ///////////////////////
@@ -164,6 +172,18 @@ const TextInputWithSearch = ({
   const [notfoundError, SetNotfoundError] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  //////////////////////
+  //     useeffect    //
+  /////////////////////
+
+  useEffect(() => {
+    setInputValue('')
+    setSelectionList([])
+    // Uncomment below line if empty input needs to be returned
+    if(handleReturnValue) handleReturnValue([])
+  }, [clearInput])
+
   ///////////////////////////
   //        handlers       //
   //////////////////////////
@@ -190,8 +210,8 @@ const TextInputWithSearch = ({
     } else {
       setSelectionList([...selectedOptionsList.map((item: any) => item[searchBy])]);
       handleToggleModal();
-      
-      if(errorMessage) {
+
+      if (errorMessage) {
         SetNotfoundError(false)
         setErrorMessage('')
       }
@@ -202,6 +222,7 @@ const TextInputWithSearch = ({
   // Set input state
   //
   const handleChange = (event: any) => {
+    if (maxChars && event.target.value.length > maxChars) return false
     setInputValue(event.target.value);
   };
 
@@ -212,7 +233,20 @@ const TextInputWithSearch = ({
     e.preventDefault();
 
     if (e) {
-      handleInputValidation(e.target.value);
+      let inputValue = e.target.value;
+      //
+      // if inputvalue is empty and default value is present
+      // set default value as input value
+      // 
+      if (!inputValue && defaultValue) {
+        inputValue = defaultValue
+        //
+        // uncomment below line if input field needs
+        // to be populated with default value
+        // 
+        // setInputValue(defaultValue)
+      }
+      handleInputValidation(inputValue);
     }
   };
 
@@ -228,7 +262,16 @@ const TextInputWithSearch = ({
     //
     if (!multipleSelection && splittedValues.length > 1) {
       SetNotfoundError(true);
-      setErrorMessage("Multiple are values not allowed")
+      setErrorMessage("Multiple values are not allowed")
+      return false;
+    }
+
+    //
+    // Check if given input is less than min characters length
+    //
+    if (minChars && inputValue.length < minChars) {
+      SetNotfoundError(true);
+      setErrorMessage(`Minimum input character length is ${minChars}`)
       return false;
     }
 
@@ -252,15 +295,15 @@ const TextInputWithSearch = ({
         SetNotfoundError(false);
         setSelectionList([...finalMatchingArray]);
         setInputValue("");
-        if(errorMessage) {
+        if (errorMessage) {
           setErrorMessage('')
           SetNotfoundError(false)
         }
-        
+
         //
         // check if callack exists then return value to callback
         //
-        if(handleReturnValue) handleReturnValue(finalMatchingArray)
+        if (handleReturnValue) handleReturnValue(finalMatchingArray)
       } else {
         SetNotfoundError(true);
         setErrorMessage("Invalid Input")
@@ -333,39 +376,39 @@ const TextInputWithSearch = ({
             }}
           />
           {selecitonList && selecitonList.length > 0 && (
-              <Typography
-                sx={{
-                  mr: 1,
-                  my: 0.5,
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-                fontSize={`${fontSize}px`}
-                fontFamily={fontFamily}
-                fontWeight={600}
-                variant="subtitle1"
-                onClick={handleToggleModal}
-              >
-                <React.Fragment>{selecitonList.join(", ")}</React.Fragment>
-              </Typography>
+            <Typography
+              sx={{
+                mr: 1,
+                my: 0.5,
+                textTransform: "uppercase",
+                cursor: "pointer",
+              }}
+              fontSize={`${fontSize}px`}
+              fontFamily={fontFamily}
+              fontWeight={600}
+              variant="subtitle1"
+              onClick={handleToggleModal}
+            >
+              <React.Fragment>{selecitonList.join(", ")}</React.Fragment>
+            </Typography>
           )}
         </FormControl>
       </form>
 
       {/* Search entries popup */}
-        <ActionModal
-          title="Selection List"
-          children={
-            <ListTable
-              returnSelectedOptions={(list) => handleSelectedList(list)}
-              multipleSelection={multipleSelection}
-              handleClose={handleToggleModal}
-              tableData={listData}
-            />
-          }
-          open={isModalOpen}
-          handleClose={handleToggleModal}
-        />
+      <ActionModal
+        title="Selection List"
+        children={
+          <ListTable
+            returnSelectedOptions={(list) => handleSelectedList(list)}
+            multipleSelection={multipleSelection}
+            handleClose={handleToggleModal}
+            tableData={listData}
+          />
+        }
+        open={isModalOpen}
+        handleClose={handleToggleModal}
+      />
     </Box>
   );
 };

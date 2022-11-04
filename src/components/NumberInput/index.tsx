@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, FormControl, TextField, Typography } from "@mui/material";
 import { handleFormatIntegers, handleValidateInteger } from "../../utils/helpers";
 import { TBorder } from "../TextInputWithSearch";
@@ -25,6 +25,10 @@ export interface NumberInputProps {
     type?: TInputType,
     hideLabel?: boolean,
     isRangeInput?: boolean,
+    clearInput?: boolean,
+    defaultValue?: string,
+    minChars?: string | number,
+    maxChars?: string | number,
     handleReturnValue: IReturnValueCallback
 }
 
@@ -81,13 +85,17 @@ const NumberInput = ({
     type = 'integer',
     className,
     handleReturnValue,
-    width = '300px',
+    width = '200px',
     border = 'standard',
     hideLabel = false,
     isRangeInput = false,
     fontColor = '#000000',
     backgroundColor,
-    borderColor
+    borderColor,
+    clearInput = false,
+    defaultValue,
+    minChars = 1,
+    maxChars = 3
 }: NumberInputProps) => {
     const defaultErrorState = [
         {
@@ -108,8 +116,25 @@ const NumberInput = ({
 
     const [inputValue, setInputValue] = useState('')
     const [multiInput, setMultipInput] = useState(['', ''])
-    const [error, setError] = useState <Array<TError>>(defaultErrorState)
-    const [formattedInput, setformattedInput] = useState <Array<string>>([])
+    const [error, setError] = useState<Array<TError>>(defaultErrorState)
+    const [formattedInput, setformattedInput] = useState<Array<string>>([])
+    //
+    // Input references used for focusing
+    //
+    const input1Ref: any = useRef(null)
+    const input2Ref: any = useRef(null)
+
+    //////////////////////
+    //     useeffect    //
+    /////////////////////
+
+    useEffect(() => {
+        const defaultInput = ['', '']
+        setMultipInput(defaultInput)
+        setformattedInput([])
+        // Uncomment below line if empty input needs to be returned
+        // if(handleReturnValue) handleReturnValue(defaultInput)
+    }, [clearInput])
 
     /////////////////////
     //      handler    //
@@ -121,12 +146,18 @@ const NumberInput = ({
             temp[inputIndex] = val;
             setMultipInput([...temp])
         } else {
+            if (val.length > maxChars) return false
             setInputValue(val)
         }
     }
 
-    const handleSubmit = () => {
-        if(isRangeInput) {
+    const handleSubmit = (isLastInput = false) => {
+        if (isRangeInput && !isLastInput) {
+            input2Ref.current.focus()
+            return;
+        }
+
+        if (isRangeInput) {
             multiInput.map((currentInput, index) => {
                 handleValidation(currentInput, index)
             })
@@ -135,32 +166,44 @@ const NumberInput = ({
         }
     }
 
-    const handleValidation = (value: string, index = 0) => {
+    const handleValidation = (currentValue: string, index = 0) => {
         let currentFormattedValues: Array<any> = formattedInput;
         let errorState = error; //Error state holder
+
         //
         // return error if value is empty
         //
-        if (value === '') {
-            errorState[index] = {
-                isError: true,
-                errorMessage: 'Empty input not allowed',
-                index: index
+        if (currentValue === '') {
+            // 
+            // if the submitted input is less than min characters accepted.
+            // 
+            if (minChars && currentValue.length < minChars) {
+                errorState[index] = {
+                    isError: true,
+                    errorMessage: `Minimum Input length should be ${minChars}`,
+                    index: index
+                }
+                setError([...errorState])
+                if (formattedInput) setformattedInput([''])
+                return false;
             }
-            setError([...errorState])
-            if (formattedInput) setformattedInput([''])
-            return false;
+            if (type === 'integer') {
+                currentValue = defaultValue ? defaultValue : '0'
+            } else {
+                // Decimal, amount, decimal masking
+                currentValue = defaultValue ? defaultValue : '0.00'
+            }
         }
 
         //
         // Check if given input only contains integers
         //
-        if (handleValidateInteger(value)) {
+        if (handleValidateInteger(currentValue)) {
             //
             // if input type is integer
             //
             if (type === 'integer') {
-                if (value.includes('.') || value.includes(',')) {
+                if (currentValue.includes('.') || currentValue.includes(',')) {
                     errorState[index] = {
                         isError: true,
                         errorMessage: 'Invalid input',
@@ -175,14 +218,19 @@ const NumberInput = ({
                     }
                     setError([...errorState])
                 }
-                if(!currentFormattedValues[index]) currentFormattedValues[index] = ''
-                currentFormattedValues[index] = value
+                if (!currentFormattedValues[index]) currentFormattedValues[index] = ''
+                currentFormattedValues[index] = currentValue
                 setformattedInput([...currentFormattedValues])
                 return;
             }
             // const formattedVal = handleFormatIntegers(value)
-            currentFormattedValues[index] = handleFormatIntegers(value)
+
+            // if true add .00 at the end if there is not post decimal value
+            const isPostDecimalMaskingRequired = type === 'amount' || type === 'decimal' || type === 'decimalMasking' ? true : false
+            currentFormattedValues[index] = handleFormatIntegers(currentValue, isPostDecimalMaskingRequired)
             setformattedInput([...currentFormattedValues])
+
+            // Clear errors after setting input value
             errorState[index] = {
                 isError: false,
                 errorMessage: '',
@@ -200,21 +248,35 @@ const NumberInput = ({
         }
 
         //
+        // Check if 1st input is smaller than 2nd
+        // 
+        if ((multiInput[0] > multiInput[1]) && index === 1) {
+            // return error for 1st input
+            errorState[0] = {
+                isError: true,
+                errorMessage: 'First value must be less than second value',
+                index: 0
+            }
+            setError([...errorState]);
+            return false;
+        }
+
+        //
         // return input value via callback
         //        
-        if (!error[0].isError && !error[1].isError && value && handleReturnValue) {
+        if (!error[0].isError && !error[1].isError && currentValue && handleReturnValue) {
             //
             // if range input then return value if its last input
             // or return value if single input
             //
-            if((isRangeInput && index === 1)) {
+            if ((isRangeInput && index === 1)) {
                 handleReturnValue(multiInput)
             } else if (!isRangeInput) {
-                handleReturnValue(value)
+                handleReturnValue(currentValue)
             }
         }
     }
-    
+
     return <Box sx={{ display: 'flex', alignItems: 'center', }}>
         <Typography
             sx={{ color: 'action.active', mr: 1, my: 0.5 }}
@@ -235,7 +297,9 @@ const NumberInput = ({
                 fontcolor={fontColor}
                 dir={type === 'amount' ? 'rtl' : 'ltr'}
                 width={width}
+                inputRef={input1Ref}
                 fontsize={fontSize}
+                defaultValue={type === 'amount' && 0}
                 bordercolor={borderColor}
                 backgroundcolor={backgroundColor}
                 variant={border}
@@ -247,10 +311,10 @@ const NumberInput = ({
                 onKeyPress={(ev: any) => {
                     if (ev.key === "Enter") {
                         ev.preventDefault();
-                        handleSubmit();
+                        handleSubmit(false);
                     }
                 }}
-                onBlur={handleSubmit}
+                onBlur={() => isRangeInput ? '' : handleSubmit(false)}
             />
             {isRangeInput &&
                 <div style={{
@@ -265,23 +329,25 @@ const NumberInput = ({
                         placeholder={placeholder}
                         type='text'
                         className={className}
+                        inputRef={input2Ref}
                         fontcolor={fontColor}
                         width={width}
+                        dir={type === 'amount' ? 'rtl' : 'ltr'}
                         fontsize={fontSize}
                         bordercolor={borderColor}
                         backgroundcolor={backgroundColor}
                         variant={border}
                         error={error[1] && error[1].isError ? true : false}
                         helperText={error[1] && error[1].isError && error[1].errorMessage}
-                        aria-activedescendant=""
                         onChange={(e: any) => handleSetValue(e.target.value, 1)}
                         value={isRangeInput ? multiInput[1] : inputValue}
                         onKeyPress={(ev: any) => {
                             if (ev.key === "Enter") {
                                 ev.preventDefault();
-                                handleSubmit();
+                                handleSubmit(true);
                             }
                         }}
+                        onBlur={() => handleSubmit(true)}
                     />
                 </div>
             }
