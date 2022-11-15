@@ -50,7 +50,7 @@ export function handleValidateInteger(value: string) {
 //
 // formats the value to limit the last decimals 
 //
-export const handleFormatIntegers = (value: string, isAmount = false) => {
+export const handleFormatIntegers = (value: string, isAmount = false, decimalLimit = 2) => {
   //
   // Separate numbers before and after decimal
   //
@@ -61,7 +61,7 @@ export const handleFormatIntegers = (value: string, isAmount = false) => {
     numbersBeforeDecimal.replaceAll(",", "")
   );
   if (numbersAfterDecimal !== undefined) {
-    return `${formattedInput}.${numbersAfterDecimal.slice(0, 2)}`;
+    return `${formattedInput}.${numbersAfterDecimal.slice(0, decimalLimit)}`;
   } else {
     if(isAmount) return `${formattedInput}.00`
     return formattedInput;

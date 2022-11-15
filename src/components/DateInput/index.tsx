@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { validDateRegEx } from '../../utils/helpers'
-import TextInput, { TError, TextInputProps } from '../TextInput'
+import TextInput, { TError, TextInputProps, TReturnedPayload } from '../TextInput'
 import { TBorder } from '../TextInputWithSearch'
 
 interface IDateInputProps extends TextInputProps {
@@ -21,20 +21,20 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
   font-size: ${(props: any) => props.fontSize};
   font-weight: 600
   `
-  export const defaultErrorState = [
-      {
-          isError: false,
-          errorMessage: '',
-          index: 0
-      },
-      {
-          isError: false,
-          errorMessage: '',
-          index: 1
-      }
-  ]
+export const defaultErrorState = [
+    {
+        isError: false,
+        errorMessage: '',
+        index: 0
+    },
+    {
+        isError: false,
+        errorMessage: '',
+        index: 1
+    }
+]
 
-  export default function DateInput({
+export default function DateInput({
     isRangeInput = false,
     border = 'standard',
     fontSize = '16px',
@@ -42,7 +42,8 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
     fontColor = '#000000',
     clearInput = false,
     minChars = 6,
-    maxChars = 8
+    maxChars = 8,
+    handleReturnValue = null
 }: IDateInputProps) {
 
     const [displayValue, setDisplayValue] = useState<Array<string>>([]);
@@ -56,14 +57,22 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
     //
     // validates the submitted values before returning
     //
-    const handleValue = (valueArray: Array<string>) => {
-        if (isRangeInput && valueArray.length > 0) {
-            for (let i = 0; i < valueArray.length; i++) {
-                let validation = handleValidation(valueArray[i], i);
-                // if(validation === false) break;
+    const handleValue = (valueArray: TReturnedPayload) => {
+        if (isRangeInput && valueArray.rawValues.length > 0) {
+            for (let i = 0; i < valueArray.rawValues.length; i++) {
+                let validation = handleValidation(valueArray.rawValues[i], i);
             }
         } else {
-            handleValidation(valueArray[0])
+            handleValidation(valueArray.rawValues[0])
+        }
+
+        // Return payload to parent component if callback exists
+        if (handleReturnValue) {
+            let payload = {
+                rawValues: valueArray,
+                formattedValues: displayValue
+            }
+            handleReturnValue(payload)
         }
         return displayValue
     }
@@ -75,9 +84,7 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
         // Trim input value to remove empty spaces if any
         let trimmedValue = currentValue.replace(/\s/g, "");
 
-        console.log(currentValue)
         if ((!currentValue || currentValue === '') && defaultDate) {
-            console.log('first')
             trimmedValue = defaultDate
         }
 
@@ -158,7 +165,7 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
             // Conver dates into time stamp for comparison
             const d1 = new Date(tempDateHolder[0])
             const d2 = new Date(tempDateHolder[1])
-            const dateTimeStamp = new Date(formattedDate) 
+            const dateTimeStamp = new Date(formattedDate)
             const currentDate = new Date();
 
             if (dateTimeStamp > currentDate) {
@@ -188,6 +195,7 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
             return true;
         }
     }
+
     return (
         <StyleldDivContainer>
             <TextInput
@@ -201,15 +209,16 @@ export const StyledValueContainer = styled.p<{ fontSize: any }>`
                 // @ts-ignore
                 handleReturnValue={handleValue}
                 isRangeInput={isRangeInput}
+                formattedInput={displayValue}
                 error={error}
                 clearInput={clearInput}
                 maxChars={maxChars}
             />
-            {displayValue && !error[0].isError && !error[1].isError && (
+            {/* {displayValue && !error[0].isError && !error[1].isError && (
                 <StyledValueContainer fontSize={fontSize}>
                     {isRangeInput ? displayValue.join(' To ') : displayValue.join('')}
                 </StyledValueContainer>
-            )}
+            )} */}
         </StyleldDivContainer>
     )
 }

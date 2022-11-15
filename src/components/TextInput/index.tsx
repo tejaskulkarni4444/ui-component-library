@@ -4,7 +4,6 @@ import FormControl from "@mui/material/FormControl"
 import { TBorder } from "../TextInputWithSearch";
 import { IReturnValueCallback } from "../NumberInput";
 import styled from "styled-components";
-import { Typography } from "@mui/material";
 import { defaultErrorState } from "../DateInput";
 
 ///////////////////////////
@@ -29,7 +28,7 @@ export interface TextInputProps {
   effects?: string,
   hideLabel?: boolean,
   error?: Array<TError>,
-  handleReturnValue: IReturnValueCallback,
+  handleReturnValue: IReturnValueCallback | null,
   borderColor?: string,
   fontColor?: string | undefined,
   labelFontColor?: string,
@@ -38,7 +37,13 @@ export interface TextInputProps {
   clearInput?: boolean,
   minChars?: string | number,
   maxChars?: string | number,
+  formattedInput?: Array<string>,
   defaultValue?: string,
+}
+
+export type TReturnedPayload = {
+  rawValues: Array<string>,
+  formattedValues: Array<string>
 }
 
 type TTextfieldProps = {
@@ -108,7 +113,7 @@ const TextInput = ({
   border = 'standard',
   className,
   hideLabel = false,
-  handleReturnValue,
+  handleReturnValue = null,
   error = [],
   labelFontColor,
   fontColor,
@@ -117,7 +122,8 @@ const TextInput = ({
   clearInput = false,
   defaultValue,
   minChars,
-  maxChars
+  maxChars,
+  formattedInput = []
 }: TextInputProps) => {
 
   /////////////////////////////
@@ -138,12 +144,19 @@ const TextInput = ({
   //     useeffect    //
   /////////////////////
 
+  const payload: TReturnedPayload = {
+    rawValues: [],
+    formattedValues: []
+  }
+
   useEffect(() => {
     const defaultInput = ['', '']
     setMultipInput(defaultInput)
 
     // Uncomment below line if empty input needs to be returned
-    if (handleReturnValue && clearInput) handleReturnValue(defaultInput)
+    payload.rawValues = defaultInput
+    payload.formattedValues = defaultInput
+    if (handleReturnValue && clearInput) handleReturnValue(payload)
   }, [clearInput])
 
   ////////////////////////////
@@ -170,6 +183,10 @@ const TextInput = ({
     const defaultInputValue = ['', '']
     let errorState = localError; //Error state holder
 
+    // 
+    // return false if already submitted
+    // 
+    if (isSubmitted) return false;
     // 
     // if input is empty and default value exists
     // assign default value to input
@@ -220,7 +237,12 @@ const TextInput = ({
     }
 
     setIsSubmitted(true)
-    if (handleReturnValue) handleReturnValue(multiInput)
+    
+    // return payload to parent component
+    if (handleReturnValue) {
+      payload.rawValues = multiInput
+      handleReturnValue(payload)
+    }
   }
 
   const handleBlur = () => {
@@ -228,12 +250,23 @@ const TextInput = ({
     if (handleReturnValue) handleReturnValue(multiInput)
   }
 
+  const handleClearInput = (val: string, index: number) => {
+    setIsSubmitted(false)
+    // 
+    // setting input values to last entered character
+    // 
+
+    let temp: Array<string> = multiInput;
+    temp[index] = val[val.length - 1];  // Set last input character as first
+    setMultipInput([...temp])
+  }
+
   return (
     <StyleldDivContainer>
       {!hideLabel && <StyledParagraph
         fontSize={fontSize}
         fontFamily={fontFamily}
-        fontcolor={labelFontColor}
+        fontcolor={labelFontColor ? labelFontColor : fontColor}
       >
         {label}
       </StyledParagraph>}
@@ -245,7 +278,7 @@ const TextInput = ({
           variant={border}
           error={(error[0] && error[0].isError === true) || (localError[0] && localError[0].isError)}
           helperText={error[0] && error[0].isError ? error[0].errorMessage : localError[0].errorMessage}
-          value={multiInput[0]}
+          value={isSubmitted ? formattedInput[0] : multiInput[0]}
           inputRef={input1Ref}
           className={className}
           fontcolor={fontColor}
@@ -253,7 +286,7 @@ const TextInput = ({
           fontsize={fontSize}
           bordercolor={borderColor}
           backgroundcolor={backgroundColor}
-          onChange={(ev) => handleChange(ev)}
+          onChange={(ev: any) => isSubmitted ? handleClearInput(ev.target.value, 0) : handleChange(ev)}
           onKeyPress={(ev: any) => {
             if (ev.key === "Enter") {
               ev.preventDefault();
@@ -275,13 +308,13 @@ const TextInput = ({
               helperText={error[1] && error[1].isError ? error[1].errorMessage : localError[1].errorMessage}
               className={className}
               inputRef={input2Ref}
-              value={multiInput[1]}
+              value={isSubmitted ? formattedInput[1] : multiInput[1]}
               fontcolor={fontColor}
               width={width}
               fontsize={fontSize}
               bordercolor={borderColor}
               backgroundcolor={backgroundColor}
-              onChange={(ev) => handleChange(ev, 1)}
+              onChange={(ev: any) => isSubmitted ? handleClearInput(ev.target.value, 1) : handleChange(ev, 1)}
               onKeyPress={(ev: any) => {
                 if (ev.key === "Enter") {
                   ev.preventDefault();
@@ -293,7 +326,7 @@ const TextInput = ({
           </div>
         }
       </FormControl>
-      {!handleReturnValue && multiInput[0] && isSubmitted && multiInput.length > 0 && <Typography
+      {/* {!handleReturnValue && multiInput[0] && isSubmitted && multiInput.length > 0 && <Typography
         sx={{
           mr: 1,
           my: 0.5,
@@ -306,7 +339,7 @@ const TextInput = ({
         variant="subtitle1"
       >
         <React.Fragment>{isRangeInput ? `${multiInput[0]} TO ${multiInput[1]}` : multiInput[0]}</React.Fragment>
-      </Typography>}
+      </Typography>} */}
     </StyleldDivContainer>
 
   );

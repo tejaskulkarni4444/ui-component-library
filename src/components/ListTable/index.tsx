@@ -66,100 +66,54 @@ interface SearchableTableProps {
 
 export default function ListTable({
   returnSelectedOptions,
-  tableData
+  tableData,
+  multipleSelection
 }: SearchableTableProps) {
   ////////////////////////////
   //         states         //
   ////////////////////////////
 
-  // const data = React.useMemo(
-  //   () => [
-  //     {
-  //       id: "1",
-  //       name: "Retired",
-  //       city: "London",
-  //     },
-  //     {
-  //       id: "2",
-  //       name: "Doctor",
-  //       city: "Madrid",
-  //     },
-  //     {
-  //       id: "3",
-  //       name: "Architect",
-  //       city: "Paris",
-  //     },
-  //     {
-  //       id: "4",
-  //       name: "Engineer",
-  //       city: "Alabama",
-  //     },
-  //     {
-  //       id: "5",
-  //       name: "Business",
-  //       city: "Nashik",
-  //     },
-  //     {
-  //       id: "6",
-  //       name: "Student",
-  //       city: "NY",
-  //     },
-  //     {
-  //       id: "7",
-  //       name: "Service",
-  //       city: "Alabama",
-  //     },
-  //     {
-  //       id: "8",
-  //       name: "Teacher",
-  //       city: "Alabama",
-  //     },
-  //     {
-  //       id: "9",
-  //       name: "Teller",
-  //       city: "Mumbai",
-  //     },
-  //   ],
-  //   []
-  // );
 
   const data = React.useMemo(() => tableData, [])
 
   const columnsData: any = Object.keys(data[0]).reduce(
     (colArray: Array<{}>, key: string) => {
       // if (key && key !== "id")
-        colArray.push({ Header: key, accessor: key, width: 100 });
+      colArray.push({ Header: key, accessor: key, width: 100 });
       return colArray;
     },
     []
   );
 
+  const checkboxCol = {
+    id: "selection",
+    // The header can use the table's getToggleAllRowsSelectedProps method
+    // to render a checkbox
+    Header: ({ getToggleAllRowsSelectedProps }: any) => (
+      <div>
+        <input type="checkbox" {...getToggleAllRowsSelectedProps()} />
+      </div>
+    ),
+    // The cell can use the individual row's getToggleRowSelectedProps method
+    // to the render a checkbox
+    Cell: ({ row }: any) => (
+      <div>
+        <input type="checkbox" {...row.getToggleRowSelectedProps()} />
+      </div>
+    ),
+  }
+
   const columns: any = React.useMemo(
-    () => [
-      {
-        id: "selection",
-        // The header can use the table's getToggleAllRowsSelectedProps method
-        // to render a checkbox
-        Header: ({ getToggleAllRowsSelectedProps }: any) => (
-          <div>
-            <input type="checkbox" {...getToggleAllRowsSelectedProps()} />
-          </div>
-        ),
-        // The cell can use the individual row's getToggleRowSelectedProps method
-        // to the render a checkbox
-        Cell: ({ row }: any) => (
-          <div>
-            <input type="checkbox" {...row.getToggleRowSelectedProps()} />
-          </div>
-        ),
-      },
-      ...columnsData,
+    () => multipleSelection ? [
+      checkboxCol, ...columnsData
+    ] : [
+      ...columnsData
     ],
     []
   );
 
-  const { 
-    getTableProps, getTableBodyProps, 
+  const {
+    getTableProps, getTableBodyProps,
     headerGroups, rows, prepareRow,
     state
   } =
@@ -172,6 +126,11 @@ export default function ListTable({
       useRowSelect
     );
 
+
+  const handleSingleSelection = (row: any) => {
+    returnSelectedOptions([row?.original])
+  }
+
   //
   // Close modal and return selected options
   //
@@ -180,7 +139,7 @@ export default function ListTable({
     let selectionData = Object.keys(state.selectedRowIds).map((id) => rows.find((row) => row.id === id)?.original)
     returnSelectedOptions(selectionData)
   }
-  
+
   return (
     <>
       <div>
@@ -200,9 +159,9 @@ export default function ListTable({
                       <span>
                         {column.isSorted ? (
                           column.isSortedDesc ? (
-                            <BsSortAlphaDownAlt style={{ margin: '0 5px'}} />
+                            <BsSortAlphaDownAlt style={{ margin: '0 5px' }} />
                           ) : (
-                            <BsSortAlphaUpAlt style={{ margin: '0 5px'}} />
+                            <BsSortAlphaUpAlt style={{ margin: '0 5px' }} />
                           )
                         ) : (
                           ""
@@ -217,7 +176,11 @@ export default function ListTable({
               {rows.map((row, i) => {
                 prepareRow(row);
                 return (
-                  <tr {...row.getRowProps()}>
+                  <tr {...row.getRowProps()}
+                    style={!multipleSelection ? { cursor: 'pointer' } : {}}
+                    // return values of the clicked row when multi seleciton is false
+                    onClick={() => !multipleSelection && handleSingleSelection(row)}
+                  >
                     {row.cells.map((cell) => {
                       return (
                         <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
